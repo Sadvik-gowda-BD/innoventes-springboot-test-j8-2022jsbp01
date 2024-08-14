@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.innoventes.test.app.dto.CompanyDTO;
+import com.innoventes.test.app.dto.PatchDto;
 import com.innoventes.test.app.entity.Company;
 
 public interface CompanyMapper {
@@ -15,4 +16,6 @@ public interface CompanyMapper {
 	Set<CompanyDTO> getCompanyDTOSet(Set<Company> entitySet);
 
 	Company getCompany(CompanyDTO dto);
+
+	void partialMap(Company company, PatchDto patchDto);
 }

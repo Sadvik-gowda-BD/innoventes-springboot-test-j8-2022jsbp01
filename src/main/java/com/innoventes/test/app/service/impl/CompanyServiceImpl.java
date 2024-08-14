@@ -3,6 +3,10 @@ package com.innoventes.test.app.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.innoventes.test.app.dto.CompanyDTO;
+import com.innoventes.test.app.dto.PatchDto;
+import com.innoventes.test.app.mapper.CompanyMapper;
+import com.innoventes.test.app.validator.CompanyRequestValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +27,9 @@ public class CompanyServiceImpl implements CompanyService {
 	@Autowired
 	private ServiceHelper serviceHelper;
 
+	@Autowired
+	private CompanyMapper companyMapper;
+
 	@Override
 	public List<Company> getAllCompanies() {
 		ArrayList<Company> companyList = new ArrayList<Company>();
@@ -32,6 +39,10 @@ public class CompanyServiceImpl implements CompanyService {
 
 	@Override
 	public Company addCompany(Company company) throws ValidationException {
+		CompanyRequestValidator.companyCodeValidator(company);
+		if (!CompanyRequestValidator.urlValidator(company.getWebSiteURL())) {
+			company.setWebSiteURL(null);
+		}
 		return companyRepository.save(company);
 	}
 
@@ -52,5 +63,35 @@ public class CompanyServiceImpl implements CompanyService {
 						String.format(serviceHelper.getLocalizedMessage(ApplicationErrorCodes.COMPANY_NOT_FOUND), id),
 						ApplicationErrorCodes.COMPANY_NOT_FOUND));
 		companyRepository.deleteById(existingCompanyRecord.getId());
+	}
+
+	@Override
+	public CompanyDTO getCompanyById(Long id) {
+		Company company = getById(id);
+		return companyMapper.getCompanyDTO(company);
+	}
+
+	@Override
+	public CompanyDTO getCompanyByCompanyCode(String companyCode) {
+		Company company = companyRepository.findByCompanyCode(companyCode)
+				.orElseThrow(() -> new ResourceNotFoundException(
+						String.format(serviceHelper.getLocalizedMessage(ApplicationErrorCodes.COMPANY_NOT_FOUND), companyCode),
+						ApplicationErrorCodes.COMPANY_NOT_FOUND));
+		return companyMapper.getCompanyDTO(company);
+	}
+
+	@Override
+	public CompanyDTO partialUpdate(PatchDto patchDto, Long id) {
+		Company company = getById(id);
+		companyMapper.partialMap(company, patchDto);
+		companyRepository.save(company);
+		return companyMapper.getCompanyDTO(company);
+	}
+
+	private Company getById(Long id) {
+		return companyRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException(
+						String.format(serviceHelper.getLocalizedMessage(ApplicationErrorCodes.COMPANY_NOT_FOUND), id),
+						ApplicationErrorCodes.COMPANY_NOT_FOUND));
 	}
 }

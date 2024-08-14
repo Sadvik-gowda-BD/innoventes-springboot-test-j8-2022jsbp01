@@ -6,6 +6,8 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import com.innoventes.test.app.dto.PatchDto;
+import com.innoventes.test.app.validator.CompanyRequestValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -13,11 +15,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -64,6 +68,21 @@ public class CompanyController {
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newCompany.getId())
 				.toUri();
 		return ResponseEntity.created(location).body(newCompanyDTO);
+	}
+
+	@GetMapping("/{id}")
+	public CompanyDTO getCompanyById(@PathVariable(value = "id") Long id) {
+		return companyService.getCompanyById(id);
+	}
+
+	@GetMapping("/{companyCode}")
+	public CompanyDTO getCompanyByCompanyCode(@PathVariable(value = "companyCode") String companyCode) {
+		return companyService.getCompanyByCompanyCode(companyCode);
+	}
+
+	@PatchMapping("/companies/{id}")
+	public CompanyDTO partialUpdate(@PathVariable(value = "id") Long id, @RequestBody PatchDto patchDto) {
+		return companyService.partialUpdate(patchDto, id);
 	}
 
 	@PutMapping(value = "/companies/{id}")
